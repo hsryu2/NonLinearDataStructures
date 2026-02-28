@@ -10,13 +10,15 @@ public:
 	}
 	~Tree()
 	{
-
+		Destroy();
 	}
 
 	// »ðÀÔ
-	bool Insert(const std::string name, const int score)
+	bool Insert(const std::string& name, const int& score)
 	{
-		if (Search(score, name))
+
+		Node* outNode = nullptr;
+		if (Search(score, name, outNode))
 		{
 			return false;
 		}
@@ -25,13 +27,14 @@ public:
 			root = new Node(name, score);
 			return true;
 		}
-
+		root = InsertRecursive(root, nullptr, name, score);
+		return true;
 	}
 
 	// Å½»ö
-	bool Search(const int score, const std::string name)
+	bool Search(const int& score, const std::string& name, Node*& outNode)
 	{
-		return searchReursive(root,score, name);
+		return searchRecursive(root,score, name, outNode);
 	}
 
 	Node* SearchMinValue(Node* node)
@@ -44,53 +47,51 @@ public:
 		return node;
 	}
 
-	// Å½»ö Àç±ÍÇÔ¼ö.
-	bool searchReursive(Node* node, const int score, const std::string name)
+
+
+	void DeleteNode(const std::string& name)
 	{
-		if (node == nullptr)
-		{
-			return false;
-		}
+		DeleteNodeRecursive(root, name);
+	}
 
-		if (node-> playerName == name && node->score == score)
-		{
-			return true;
-		}
+	void Top(int k)
+	{
+		// ÁßÀ§ ¼øÈ¸.
+		TopRecursive(root, k);
+		
+	}
+	void Find(const std::string& name)
+	{
+		Node* node = root;
 
-		if (node->left->score > score && node->playerName != name)
+		if (findRecursive(root, name, node))
 		{
-			searchReursive(node->left, score, name);
+			std::cout << "°Ë»ö ¼º°ø!\n " << node->playerName << " " << node->score << "\n";
 		}
-
 		else
 		{
-			searchReursive(node->right, score, name);
+			std::cout << "°Ë»ö ½ÇÆÐ.";
 		}
 	}
 
-	void DeleteNode(const std::string name, const int score)
-	{
-		DeleteNodeRecursive(root, name, score);
-	}
 
-	
 private:
 	// »èÁ¦ Àç±ÍÇÔ¼ö.
 	Node* DeleteNodeRecursive(Node* node, 
-		const std::string name, const int score)
+		const std::string name)
 	{
 		if (node == nullptr)
 		{
 			return nullptr;
 		}
 
-		if (node->left->score > score && node->left->playerName != name)
+		if (node->left->playerName != name)
 		{
-			node->left = DeleteNodeRecursive(node->left, name, score);
+			node->left = DeleteNodeRecursive(node->left, name);
 		}
-		else if (node->right->score > score && node->right->playerName != name)
+		else if (node->right->playerName != name)
 		{
-			node->right = DeleteNodeRecursive(node->right, name, score);
+			node->right = DeleteNodeRecursive(node->right, name);
 		}
 		else
 		{
@@ -104,7 +105,7 @@ private:
 				node->score = SearchMinValue(node->right)->score;
 				
 				node->right = DeleteNodeRecursive(
-					node->right, node->playerName, node->score);
+					node->right, node->playerName);
 			
 			}
 
@@ -139,6 +140,32 @@ private:
 
 	}
 
+	// Å½»ö Àç±ÍÇÔ¼ö.
+	bool searchRecursive(Node* node, const int& score, const std::string& name, Node*& outNode)
+	{
+		if (!node)
+		{
+			outNode = nullptr;
+			return false;
+		}
+
+		if (node->playerName == name && node->score == score)
+		{
+			outNode = node;
+			return true;
+		}
+
+		if (node->score > score && node->playerName != name)
+		{
+
+			searchRecursive(node->left, score, name, outNode);
+		}
+
+		else
+		{
+			searchRecursive(node->right, score, name, outNode);
+		}
+	}
 
 	// »ðÀÔ Àç±ÍÇÔ¼ö.
 	Node* InsertRecursive(
@@ -164,8 +191,66 @@ private:
 		return node;
 	}
 
-private:
+	void Destroy()
+	{
+		if (!root)
+		{
+			return;
+		}
 
+		DestroyRecursive(root);
+	}
+
+	void DestroyRecursive(Node* node)
+	{
+		if (!node)
+		{
+			return;
+		}
+
+		if (!node->left && !node->right)
+		{
+			delete node;
+			return;
+		}
+		
+		DestroyRecursive(node->right);
+		DestroyRecursive(node->left);
+
+		delete node;
+	}
+	void TopRecursive(Node* node, int& k)
+	{
+		if (!node || k <= 0)
+		{
+			return;
+		}
+		k--;
+		TopRecursive(node->right, k);
+		std::cout << node->playerName << ", " << node->score << "\n";
+		TopRecursive(node->left, k);
+
+	}
+
+	bool findRecursive(Node* node, const std::string& name, Node*& outNode)
+	{
+		if (!node)
+		{
+			outNode = nullptr;
+			return false;
+		}
+
+		if (node->playerName == name)
+		{
+			outNode = node;
+			return true;
+		}
+
+		findRecursive(node->left, name, outNode);
+		findRecursive(node->right, name, outNode);
+	}
+private:
+	int rank = 0;
 	Node* root;
 
 };
